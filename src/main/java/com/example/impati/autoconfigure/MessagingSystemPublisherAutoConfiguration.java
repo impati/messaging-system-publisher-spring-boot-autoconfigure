@@ -1,4 +1,4 @@
-package com.example.impati.autoconfiguration;
+package com.example.impati.autoconfigure;
 
 import com.example.impati.messaging_system_publisher.core.ChannelRegister;
 import com.example.impati.messaging_system_publisher.core.ChannelRegistration;

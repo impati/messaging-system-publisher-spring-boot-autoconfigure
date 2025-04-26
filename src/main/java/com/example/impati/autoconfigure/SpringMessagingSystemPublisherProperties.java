@@ -1,4 +1,4 @@
-package com.example.impati.autoconfiguration;
+package com.example.impati.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

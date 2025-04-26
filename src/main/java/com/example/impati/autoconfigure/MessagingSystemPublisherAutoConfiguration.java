@@ -58,11 +58,21 @@ public class MessagingSystemPublisherAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public WebClientMessagingSystemClient messagingSystemClient(
+    public MessagingSystemClient messagingSystemClient(
             WebClient.Builder webClientBuilder,
             MessagingSystemProperties properties
     ) {
         return new WebClientMessagingSystemClient(webClientBuilder, properties);
+    }
+
+    @Bean
+    public PublisherInitializer publisherInitializer(
+            ClientRegister clientRegister,
+            ChannelRegister channelRegister,
+            ChannelRegistration channelRegistration,
+            SpringMessagingSystemPublisherProperties properties
+    ) {
+        return new PublisherInitializer(clientRegister, channelRegister, channelRegistration, properties);
     }
 
     @Bean

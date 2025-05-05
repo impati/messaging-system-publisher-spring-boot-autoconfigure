@@ -1,10 +1,13 @@
 package com.example.impati.autoconfigure;
 
+import com.example.impati.messaging_system_publisher.core.ChannelMessageRepository;
 import com.example.impati.messaging_system_publisher.core.ChannelRegister;
 import com.example.impati.messaging_system_publisher.core.ChannelRegistration;
 import com.example.impati.messaging_system_publisher.core.ClientRegister;
+import com.example.impati.messaging_system_publisher.core.MemoryChannelMessageRepository;
+import com.example.impati.messaging_system_publisher.core.MessageDeliveryGuaranteePublisher;
 import com.example.impati.messaging_system_publisher.core.MessagingSystemClient;
-import com.example.impati.messaging_system_publisher.core.MessagingSystemProperties;
+import com.example.impati.messaging_system_publisher.core.MessagingSystemPublisherProperties;
 import com.example.impati.messaging_system_publisher.core.Publisher;
 import com.example.impati.messaging_system_publisher.core.SimpleChannelRegister;
 import com.example.impati.messaging_system_publisher.core.SimpleClientRegister;
@@ -34,8 +37,8 @@ public class MessagingSystemPublisherAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public MessagingSystemProperties properties() {
-        return new MessagingSystemProperties(properties.url(), properties.clientName());
+    public MessagingSystemPublisherProperties properties() {
+        return new MessagingSystemPublisherProperties(properties.url(), properties.clientName(), properties.deliveryGuarantee());
     }
 
     @Bean
@@ -60,9 +63,19 @@ public class MessagingSystemPublisherAutoConfiguration {
     @ConditionalOnMissingBean
     public MessagingSystemClient messagingSystemClient(
             WebClient.Builder webClientBuilder,
-            MessagingSystemProperties properties
+            MessagingSystemPublisherProperties properties
     ) {
         return new WebClientMessagingSystemClient(webClientBuilder, properties);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public <T> ChannelMessageRepository<T> channelMessageRepository(
+            ChannelRegistration channelRegistration
+    ) {
+        return new MemoryChannelMessageRepository<>(
+                channelRegistration
+        );
     }
 
     @Bean
@@ -77,7 +90,17 @@ public class MessagingSystemPublisherAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public <T> Publisher<T> publisher(ChannelRegistration channelRegistration, MessagingSystemClient client) {
+    public <T> Publisher<T> publisher(
+            ChannelRegistration channelRegistration,
+            MessagingSystemClient client,
+            WebClient.Builder webClientBuilder,
+            MessagingSystemPublisherProperties properties,
+            ChannelMessageRepository<T> channelMessageRepository
+    ) {
+        if (properties.deliveryGuarantee()) {
+            return new MessageDeliveryGuaranteePublisher<>(channelRegistration, webClientBuilder, channelMessageRepository);
+        }
+
         return new SimplePublisher<>(
                 channelRegistration,
                 client

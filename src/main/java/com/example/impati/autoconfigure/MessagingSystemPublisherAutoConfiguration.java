@@ -17,9 +17,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
+@EnableScheduling
 @EnableConfigurationProperties(SpringMessagingSystemPublisherProperties.class)
 public class MessagingSystemPublisherAutoConfiguration {
 
@@ -98,7 +100,7 @@ public class MessagingSystemPublisherAutoConfiguration {
             ChannelMessageRepository<T> channelMessageRepository
     ) {
         if (properties.deliveryGuarantee()) {
-            return new MessageDeliveryGuaranteePublisher<>(channelRegistration, webClientBuilder, channelMessageRepository);
+            return new MessageDeliveryGuaranteePublisher<>(channelRegistration, webClientBuilder, channelMessageRepository, properties);
         }
 
         return new SimplePublisher<>(
